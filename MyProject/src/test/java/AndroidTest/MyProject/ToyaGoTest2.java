@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -15,7 +16,17 @@ import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.touch.offset.PointOption;
 import junit.framework.Assert;
 
+/*
+ * Test sprawdza czy po odznaczeniu checkboxa zezwalającego na odtwarzanie wyświetlony zostanie komunikat o konieczności włączenia wifi
+ * dla uruchomiena testu WiFi powinno być wyłączone, a dane komórkowe włączone
+ */
+
 public class ToyaGoTest2 {
+	
+	@After
+	public void quitDriver(){
+		driver.quit();
+	}
 	
 	public static AndroidDriver driver;
 	
@@ -47,44 +58,44 @@ public class ToyaGoTest2 {
 		}
 		
 		
-		MobileElement el1 = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
+		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
 		
-		el1.click();
+		activeMenuItem.click();
 		
 		
-		MobileElement el2 = (MobileElement) driver.findElementById("com.toya.toyago:id/allow_3g");
-		System.out.println(el2.getAttribute("checked"));
-		if(el2.getAttribute("checked").equals("true"))
-			el2.click();
+		MobileElement allowDataCheckBox = (MobileElement) driver.findElementById("com.toya.toyago:id/allow_3g");
+		System.out.println(allowDataCheckBox.getAttribute("checked"));
+		if(allowDataCheckBox.getAttribute("checked").equals("true"))
+			allowDataCheckBox.click();
 		
-		System.out.println(el2.getAttribute("checked"));
-		if(el2.getAttribute("checked").equals("false")) {
+		System.out.println(allowDataCheckBox.getAttribute("checked"));
+		if(allowDataCheckBox.getAttribute("checked").equals("false")) {
 			
-			MobileElement el3 = (MobileElement) driver.findElementByAccessibilityId("back");
-			el3.click();
+			MobileElement backButton = (MobileElement) driver.findElementByAccessibilityId("back");
+			backButton.click();
 		}
 		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")) {
 			System.out.println(mainTextView.getAttribute("text"));
 			swipeBy(700,850,400,850);
 			Thread.sleep(500);
 			}
-		el1.click();
+		activeMenuItem.click();
 		
 		
 		
 			try {
-				MobileElement el5 = (MobileElement) driver.findElementById("android:id/alertTitle");
-				System.out.println(el5.getAttribute("text"));
+				MobileElement alertTitle = (MobileElement) driver.findElementById("android:id/alertTitle");
+				System.out.println(alertTitle.getAttribute("text"));
 				
-				MobileElement el6 = (MobileElement) driver.findElementById("android:id/message");
-				//System.out.println("Wyśwetlono alert:\n"+el5.getAttribute("text")+"\n"+el6.getAttribute("text"));
+				MobileElement alertMessage = (MobileElement) driver.findElementById("android:id/message");
+				//System.out.println("Wyśwetlono alert:\n"+el5.getAttribute("text")+"\n"+alertMessage.getAttribute("text"));
 				
-				MobileElement el7 = (MobileElement) driver.findElementById("android:id/button1");
+				MobileElement alertBackButton = (MobileElement) driver.findElementById("android:id/button1");
 				//System.out.println(el7.getAttribute("text"));
-				String alert="\nWyśwetlono alert:\n"+el5.getAttribute("text")+"\n"+el6.getAttribute("text");
-				el7.click();
-				driver.quit();
-				//Assert.assertFalse(alert, true);
+				String alert="\nWyśwetlono alert:\n"+alertTitle.getAttribute("text")+"\n"+alertMessage.getAttribute("text");
+				alertBackButton.click();
+				
+				
 				Assert.assertTrue(false);
 				
 			} catch (Exception e) {
@@ -94,13 +105,13 @@ public class ToyaGoTest2 {
 					MobileElement video=(MobileElement) driver.findElementById("com.toya.toyago:id/video");
 					MobileElement seekBar=(MobileElement) driver.findElementById("com.toya.toyago:id/playerSeekBar");
 					//System.out.println("Nie było Alertu, Odtwarzacz sie uruchomił ");
-					driver.quit();
+					
 					Assert.assertTrue("Nie było Alertu, Odtwarzacz sie uruchomił ",false);
 					}
 					catch(NoSuchElementException ex)
 					{
 						//System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
-						driver.quit();
+						
 						Assert.assertTrue(true);
 					}
 				
@@ -115,7 +126,7 @@ public class ToyaGoTest2 {
 		//System.out.println(seekBar.getAttribute("bounds"));
 
 		//driver.wait(20);
-		driver.quit();
+		
 		
 	}
 	public void swipeBy(int startX, int startY, int stopX, int stopY) {

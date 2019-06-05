@@ -16,6 +16,11 @@ import io.appium.java_client.touch.offset.PointOption;
 import junit.framework.Assert;
 
 public class ToyaGoTest1 {
+	/*
+	 *  Test sprawdza czy po zaznaczeniu checkboxa zezwalającego na odtwarzanie, odtwarzacz się uruchomi
+	 *   i niewyświetlony zostanie komunikat o konieczności włączenia wifi
+	 *   dla uruchomienia yestu Wifi powinno być wyłączone, a dane komórkowe włączone
+	 */
 	
 	public static AndroidDriver driver;
 	
@@ -45,42 +50,42 @@ public class ToyaGoTest1 {
 		}
 		
 		
-		MobileElement el1 = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
+		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
 		
-		el1.click();
+		activeMenuItem.click();
 		
 		
-		MobileElement el2 = (MobileElement) driver.findElementById("com.toya.toyago:id/allow_3g");
-		System.out.println(el2.getAttribute("checked"));
-		if(el2.getAttribute("checked").equals("false"))
-			el2.click();
+		MobileElement allowDataCheckBox = (MobileElement) driver.findElementById("com.toya.toyago:id/allow_3g");
+		System.out.println(allowDataCheckBox.getAttribute("checked"));
+		if(allowDataCheckBox.getAttribute("checked").equals("false"))
+			allowDataCheckBox.click();
 		
-		System.out.println(el2.getAttribute("checked"));
-		if(el2.getAttribute("checked").equals("true")) {
+		System.out.println(allowDataCheckBox.getAttribute("checked"));
+		if(allowDataCheckBox.getAttribute("checked").equals("true")) {
 			
-			MobileElement el3 = (MobileElement) driver.findElementByAccessibilityId("back");
-			el3.click();
+			MobileElement backButton = (MobileElement) driver.findElementByAccessibilityId("back");
+			backButton.click();
 		}
 		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")) {
 			System.out.println(mainTextView.getAttribute("text"));
 			swipeBy(700,850,400,850);
 			Thread.sleep(500);
 			}
-		el1.click();
+		activeMenuItem.click();
 		
 		
 		
 			try {
-				MobileElement el5 = (MobileElement) driver.findElementById("android:id/alertTitle");
-				System.out.println(el5.getAttribute("text"));
+				MobileElement alertTitle = (MobileElement) driver.findElementById("android:id/alertTitle");
+				System.out.println(alertTitle.getAttribute("text"));
 				
-				MobileElement el6 = (MobileElement) driver.findElementById("android:id/message");
-				//System.out.println("Wyśwetlono alert:\n"+el5.getAttribute("text")+"\n"+el6.getAttribute("text"));
+				MobileElement alertMessage = (MobileElement) driver.findElementById("android:id/message");
+				//System.out.println("Wyśwetlono alert:\n"+alertTitle.getAttribute("text")+"\n"+alertMessage.getAttribute("text"));
 				
-				MobileElement el7 = (MobileElement) driver.findElementById("android:id/button1");
-				//System.out.println(el7.getAttribute("text"));
-				String alert="\nWyśwetlono alert:\n"+el5.getAttribute("text")+"\n"+el6.getAttribute("text");
-				el7.click();
+				MobileElement alertBackButton = (MobileElement) driver.findElementById("android:id/button1");
+				//System.out.println(alertBackButton.getAttribute("text"));
+				String alert="\nWyśwetlono alert:\n"+alertTitle.getAttribute("text")+"\n"+alertMessage.getAttribute("text");
+				alertBackButton.click();
 				driver.quit();
 				Assert.assertFalse(alert, true);
 				

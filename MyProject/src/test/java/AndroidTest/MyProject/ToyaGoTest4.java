@@ -7,23 +7,20 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.functions.ExpectedCondition;
 import io.appium.java_client.touch.offset.PointOption;
 import junit.framework.Assert;
 /*
- * Test sprawdza czy podczas włączania i wyłączania poszczególnych funkcjonalnosi aplikacja jest stabilna
+ * Test sprawdza czy podczas włączania i wyłączania Wifi aplikacja jest stabilna
+ * do uruchomienia testu powinny być włączone wifi i transmisja danych
  * 
  */
-public class ToyaGoTest3 {
+public class ToyaGoTest4{
 	
 	@After
 	public void quitDriver(){
@@ -33,7 +30,7 @@ public class ToyaGoTest3 {
 	public static AndroidDriver driver;
 	
 	@Test
-	public void test3() throws InterruptedException, MalformedURLException {
+	public void test4() throws InterruptedException, MalformedURLException {
 		DesiredCapabilities capabilities = new DesiredCapabilities(); 
 		//capabilities.setCapability(CapabilityType.BROWSER_NAME, "Chrome");
 		capabilities.setCapability("deviceName", "3300628333e3a29b");
@@ -44,63 +41,59 @@ public class ToyaGoTest3 {
 		if(driver.isDeviceLocked())
 		driver.unlockDevice();
 		driver.manage().timeouts().implicitlyWait(10L,  TimeUnit.SECONDS);	
-		//(new TouchAction(driver)).press(pressOptions).moveTo({x: 891: y: 894}).release().perform();
+		
 		//włączanie i wyłączanie wifi
 		//driver.toggleWifi();
 		//włączanie i wyłączanie danych komórkowych
 		//driver.toggleData();
-		WebDriverWait wait = new WebDriverWait(driver,30);
+		
 		
 		MobileElement mainTextView=(MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.TextView");
+		
+		
 		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
 		
-		try {
-		for(int i=0;i<30;i++) {
+		
+		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")) {
 			System.out.println(mainTextView.getAttribute("text"));
-			if(!mainTextView.getAttribute("text").equals("Pilot")) {
-				if(mainTextView.getAttribute("text").equals("Oglądaj TV")) {
-					activeMenuItem.click();
-					wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("com.toya.toyago:id/playerBackButton")));
-					MobileElement playerBackButton = (MobileElement) driver.findElementById("com.toya.toyago:id/playerBackButton");
-					playerBackButton.click();
-					swipeRight();
-					Thread.sleep(500);
-				}
-				else {
-				activeMenuItem.click();
-				
-				
-				if(driver.isDeviceLocked())
-					driver.unlockDevice();
-				wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("back")));
-				MobileElement backButton = (MobileElement) driver.findElementByAccessibilityId("back");
-				backButton.click();
-				swipeRight();
-				Thread.sleep(500);
-				swipeRight();
-				Thread.sleep(500);
-				swipeRight();
-				Thread.sleep(500);
-				}
+			swipeRight();
+			Thread.sleep(500);
 			}
-			else{
+		activeMenuItem.click();
+		
+		for(int i=0;i<10;i++) {
+			driver.toggleWifi();
+			System.out.println("Przełączono Wi-Fi");
 			
-				swipeRight();
-				Thread.sleep(500);
+			Thread.sleep(2000);
+			
+		try {
+			
+			MobileElement video=(MobileElement) driver.findElementById("com.toya.toyago:id/video");
+			MobileElement seekBar=(MobileElement) driver.findElementById("com.toya.toyago:id/playerSeekBar");
+			System.out.println("Nie było Alertu, Odtwarzacz jest wyświetlony! ");
+			
+			Assert.assertTrue("Nie znaleziono elementów odtwarzacza ",video!=null&&seekBar!=null);
+			
+			}
+			catch(NoSuchElementException ex)
+			{
+				//System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
+				
+				Assert.assertTrue("Nie znaleziono elementów odtwarzacza ",false);
 			}
 		}
 		
-		Assert.assertTrue(true);
-		}
-		catch(Exception e) {
-		
-			e.printStackTrace();
-			Assert.assertTrue("Aplikacja nie działa poprawnie",false);
-		}
 		
 		
-		
-		
+	}
+	public void swipeLeft() {
+		TouchAction action = new TouchAction(driver);
+		action.press(PointOption.point(700, 850));
+		action.moveTo(PointOption.point(400, 850));
+		action.release();
+		action.perform();
+
 	}
 	public void swipeRight() {
 		TouchAction action = new TouchAction(driver);
