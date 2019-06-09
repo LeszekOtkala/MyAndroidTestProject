@@ -17,6 +17,8 @@ import io.appium.java_client.TouchAction;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.touch.offset.PointOption;
 import junit.framework.Assert;
+import pages.MainMenu;
+import pages.TvPlayerPage;
 /*
  * Test sprawdza czy podczas włączania i wyłączania Wifi aplikacja jest stabilna
  * do uruchomienia testu powinny być włączone wifi i transmisja danych
@@ -24,24 +26,17 @@ import junit.framework.Assert;
  */
 public class ToyaGoTest4{
 	
-	@After
-	public void quitDriver(){
-		driver.quit();
-	}
 	
 	public static AndroidDriver driver;
 	private String currentText;
+	private MainMenu mainMenu;
+	private TvPlayerPage tvPlayerPage;
 	
 	@Test
 	public void test4() throws InterruptedException, MalformedURLException {
-		DesiredCapabilities capabilities = new DesiredCapabilities(); 
+	
 		
-		capabilities.setCapability("deviceName", "3300628333e3a29b");
-		capabilities.setCapability("platformName", "Android");
-		capabilities.setCapability("appPackage", "com.toya.toyago");
-		capabilities.setCapability("appActivity", "com.toya.toyago.MainActivity");
-		
-		driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+		driver=new CreateDriver().getDriver();
 		
 		if(driver.isDeviceLocked())
 			driver.unlockDevice();
@@ -50,63 +45,45 @@ public class ToyaGoTest4{
 		
 		WebDriverWait wait = new WebDriverWait(driver,5);
 		
-				
-		MobileElement mainTextView=(MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.TextView");
-		
-		
-		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
+		mainMenu= new MainMenu(driver);
 		
 		int j=0;
-		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")&&j<30) {
-			System.out.println(mainTextView.getAttribute("text"));
-			currentText=mainTextView.getAttribute("text");
-			swipeRight();
-			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
+		
+		while(!mainMenu.getMainTextViewText().equals("Oglądaj TV")&&j<30) {
+			
+			System.out.println(mainMenu.getMainTextViewText());
+			currentText=mainMenu.getMainTextViewText();
+			mainMenu.swipeRight();
+			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainMenu.getMainTextView(), "text", currentText)));
 			j++;
-			}
-		activeMenuItem.click();
+		}
+		
+		mainMenu.activeMenuItemClick();
+		tvPlayerPage= new TvPlayerPage(driver);
 		
 		for(int i=0;i<10;i++) {
+			
 			driver.toggleWifi();
 			System.out.println("Przełączono Wi-Fi");
-			
 			Thread.sleep(2000);
 			
-		try {
-			
-			MobileElement video=(MobileElement) driver.findElementById("com.toya.toyago:id/video");
-			MobileElement seekBar=(MobileElement) driver.findElementById("com.toya.toyago:id/playerSeekBar");
-			//System.out.println("Nie było Alertu, Odtwarzacz jest wyświetlony! ");
-			
-			Assert.assertTrue("Nie znaleziono elementów odtwarzacza ",video!=null&&seekBar!=null);
+			try {
+				Assert.assertTrue("Nie znaleziono elementów odtwarzacza ",tvPlayerPage.isVideoDisplayed()&&tvPlayerPage.isSeekBarDisplayed());
 			
 			}
-			catch(NoSuchElementException ex)
-			{
-				//System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
-				
+			catch(NoSuchElementException ex){
 				Assert.assertTrue("Nie znaleziono elementów odtwarzacza ",false);
 			}
 		}
 		
-		
-		
+			
 	}
-	public void swipeLeft() {
-		TouchAction action = new TouchAction(driver);
-		action.press(PointOption.point(700, 850));
-		action.moveTo(PointOption.point(400, 850));
-		action.release();
-		action.perform();
-
-	}
-	public void swipeRight() {
-		TouchAction action = new TouchAction(driver);
-		action.press(PointOption.point(700, 850));
-		action.moveTo(PointOption.point(900, 850));
-		action.release();
-		action.perform();
-
+	@After
+	public void quitDriver(){
+		if(driver!=null) {
+			driver.quit();
+			driver=null;
+		}
 	}
 	
 }

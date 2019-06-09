@@ -2,21 +2,19 @@ package AndroidTest.MyProject;
 
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import io.appium.java_client.MobileElement;
-import io.appium.java_client.TouchAction;
 import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.touch.offset.PointOption;
 import junit.framework.Assert;
+import pages.MainMenu;
+import pages.SettingsPage;
+import pages.TvPlayerPage;
 
 public class ToyaGoTest1 {
 	/*
@@ -26,102 +24,86 @@ public class ToyaGoTest1 {
 	 */
 	
 	public static AndroidDriver driver;
-	
+	private String currentText;
+	private MainMenu mainMenu;
+	private SettingsPage settingsPage;
+	private TvPlayerPage tvPlayerPage;
 	
 	@Test
 	public void test1() throws InterruptedException, MalformedURLException {
 		
-		DesiredCapabilities capabilities = new DesiredCapabilities(); 
-		
-		capabilities.setCapability("deviceName", "3300628333e3a29b");
-		capabilities.setCapability("platformName", "Android");
-		capabilities.setCapability("appPackage", "com.toya.toyago");
-		capabilities.setCapability("appActivity", "com.toya.toyago.MainActivity");
-		
-		driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+		driver=new CreateDriver().getDriver();
 		
 		if(driver.isDeviceLocked())
 			driver.unlockDevice();
 		
 		driver.manage().timeouts().implicitlyWait(10L,  TimeUnit.SECONDS);	
 		
+		mainMenu=new MainMenu(driver);
 		
+		WebDriverWait wait = new WebDriverWait(driver,5);
 		
-		String currentText;
-		WebDriverWait wait = new WebDriverWait(driver,3);
-		
-		MobileElement mainTextView=(MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.TextView");
 		int i=0;
 		
-		while(!mainTextView.getAttribute("text").equals("Ustawienia")&&i<30) {
-			System.out.println(currentText=mainTextView.getAttribute("text"));
-			swipeBy(700,850,900,850);
-			i++;
-			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
-			}
-		Assert.assertTrue("Zbyt wiele przeciągnięć, nie znaleziono pozycji Ustawienia",i<30);	
-		
-		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
-		
-		activeMenuItem.click();
-		
-		
-		MobileElement allowDataCheckBox = (MobileElement) driver.findElementById("com.toya.toyago:id/allow_3g");
-		//System.out.println(allowDataCheckBox.getAttribute("checked"));
-		
-		if(allowDataCheckBox.getAttribute("checked").equals("false"))
-			allowDataCheckBox.click();
-		
-		//System.out.println(allowDataCheckBox.getAttribute("checked"));
-		
-		if(allowDataCheckBox.getAttribute("checked").equals("true")) {
+		while(!mainMenu.getMainTextViewText().equals("Ustawienia")&&i<30) {
 			
-			MobileElement backButton = (MobileElement) driver.findElementByAccessibilityId("back");
-			backButton.click();
-		}
-		
-		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")) {
-			System.out.println(currentText=mainTextView.getAttribute("text"));
-			swipeBy(700,850,400,850);
-			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
+			currentText=mainMenu.getMainTextViewText();
+			mainMenu.swipeRight();
+			i++;
+			System.out.println(mainMenu.getMainTextViewText());
+			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainMenu.getMainTextView(), "text", currentText)));
 			}
 		
-		activeMenuItem.click();
-		
-		
-		
-				try {
-					MobileElement video=(MobileElement) driver.findElementById("com.toya.toyago:id/video");
-					MobileElement seekBar=(MobileElement) driver.findElementById("com.toya.toyago:id/playerSeekBar");
-					//System.out.println("Nie było Alertu, Odtwarzacz sie uruchomił ");
-					Assert.assertTrue("Odtwarzacz się nie uruchomił",video.isDisplayed()&&seekBar.isDisplayed());
-					}
-					catch(NoSuchElementException ex)
-					{
-						System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
-						Assert.assertTrue("Nie znaleziono co najmniej jednego elementu odtwarzacza",false);
-					}
+		Assert.assertTrue("Zbyt wiele przeciągnięć, nie znaleziono pozycji Ustawienia",i<30);	
 				
-				
+		mainMenu.activeMenuItemClick();
 		
+		settingsPage=new SettingsPage(driver);
+		
+		
+		if(!settingsPage.isAllowDataCheckBoxChecked())
+			settingsPage.allowDataCheckBoxClick();
+		
+		
+		if(settingsPage.isAllowDataCheckBoxChecked()) {
+			
+			settingsPage.backButtonClick();
+		}
+		System.out.println("ToTu\n");
+		i=0;
+		
+		while(!mainMenu.getMainTextViewText().equals("Oglądaj TV")&&i<30) {
+			
+			currentText=mainMenu.getMainTextViewText();
+			mainMenu.swipeLeft();
+			i++;
+			System.out.println(mainMenu.getMainTextViewText());
+			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainMenu.getMainTextView(), "text", currentText)));
+			
+			}
+		
+		
+		mainMenu.activeMenuItemClick();
+		
+		tvPlayerPage=new TvPlayerPage(driver);
+		
+		try {
+			Assert.assertTrue("Odtwarzacz się nie uruchomił",tvPlayerPage.isVideoDisplayed()&&tvPlayerPage.isSeekBarDisplayed());
+			}
+		catch(NoSuchElementException ex)
+			{
+				System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
+				Assert.assertTrue("Nie znaleziono co najmniej jednego elementu odtwarzacza",false);
+			}
+
+	}
 
 		
-		
-	}
-	public void swipeBy(int startX, int startY, int stopX, int stopY) {
-		TouchAction action = new TouchAction(driver);
-		action.press(PointOption.point(startX, startY));
-		action.moveTo(PointOption.point(stopX, stopY));
-		action.release();
-		action.perform();
-
-	}
-	
-	
 	@After
 	public void quitDriver(){
 		if(driver!=null)
 			driver.quit();
+			driver=null;
 	}
 	
 }
