@@ -5,9 +5,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.TouchAction;
@@ -24,31 +27,39 @@ public class ToyaGoTest1 {
 	
 	public static AndroidDriver driver;
 	
+	
 	@Test
 	public void test1() throws InterruptedException, MalformedURLException {
+		
 		DesiredCapabilities capabilities = new DesiredCapabilities(); 
-		//capabilities.setCapability(CapabilityType.BROWSER_NAME, "Chrome");
+		
 		capabilities.setCapability("deviceName", "3300628333e3a29b");
 		capabilities.setCapability("platformName", "Android");
 		capabilities.setCapability("appPackage", "com.toya.toyago");
 		capabilities.setCapability("appActivity", "com.toya.toyago.MainActivity");
+		
 		driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+		
 		if(driver.isDeviceLocked())
-		driver.unlockDevice();
+			driver.unlockDevice();
+		
 		driver.manage().timeouts().implicitlyWait(10L,  TimeUnit.SECONDS);	
-		//(new TouchAction(driver)).press(pressOptions).moveTo({x: 891: y: 894}).release().perform();
 		
 		
 		
+		String currentText;
+		WebDriverWait wait = new WebDriverWait(driver,3);
 		
 		MobileElement mainTextView=(MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.TextView");
+		int i=0;
 		
-		while(!mainTextView.getAttribute("text").equals("Ustawienia")) {
-		System.out.println(mainTextView.getAttribute("text"));
-		swipeBy(700,850,900,850);
-		Thread.sleep(500);
-		}
-		
+		while(!mainTextView.getAttribute("text").equals("Ustawienia")&&i<30) {
+			System.out.println(currentText=mainTextView.getAttribute("text"));
+			swipeBy(700,850,900,850);
+			i++;
+			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
+			}
+		Assert.assertTrue("Zbyt wiele przeciągnięć, nie znaleziono pozycji Ustawienia",i<30);	
 		
 		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
 		
@@ -56,69 +67,45 @@ public class ToyaGoTest1 {
 		
 		
 		MobileElement allowDataCheckBox = (MobileElement) driver.findElementById("com.toya.toyago:id/allow_3g");
-		System.out.println(allowDataCheckBox.getAttribute("checked"));
+		//System.out.println(allowDataCheckBox.getAttribute("checked"));
+		
 		if(allowDataCheckBox.getAttribute("checked").equals("false"))
 			allowDataCheckBox.click();
 		
-		System.out.println(allowDataCheckBox.getAttribute("checked"));
+		//System.out.println(allowDataCheckBox.getAttribute("checked"));
+		
 		if(allowDataCheckBox.getAttribute("checked").equals("true")) {
 			
 			MobileElement backButton = (MobileElement) driver.findElementByAccessibilityId("back");
 			backButton.click();
 		}
+		
 		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")) {
-			System.out.println(mainTextView.getAttribute("text"));
+			System.out.println(currentText=mainTextView.getAttribute("text"));
 			swipeBy(700,850,400,850);
-			Thread.sleep(500);
+			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
 			}
+		
 		activeMenuItem.click();
 		
 		
 		
-			try {
-				MobileElement alertTitle = (MobileElement) driver.findElementById("android:id/alertTitle");
-				System.out.println(alertTitle.getAttribute("text"));
-				
-				MobileElement alertMessage = (MobileElement) driver.findElementById("android:id/message");
-				//System.out.println("Wyśwetlono alert:\n"+alertTitle.getAttribute("text")+"\n"+alertMessage.getAttribute("text"));
-				
-				MobileElement alertBackButton = (MobileElement) driver.findElementById("android:id/button1");
-				//System.out.println(alertBackButton.getAttribute("text"));
-				String alert="\nWyśwetlono alert:\n"+alertTitle.getAttribute("text")+"\n"+alertMessage.getAttribute("text");
-				alertBackButton.click();
-				driver.quit();
-				Assert.assertFalse(alert, true);
-				
-				//Assert.assertTrue(false);
-				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				//System.out.println("Nie było Alertu!");
 				try {
 					MobileElement video=(MobileElement) driver.findElementById("com.toya.toyago:id/video");
 					MobileElement seekBar=(MobileElement) driver.findElementById("com.toya.toyago:id/playerSeekBar");
 					//System.out.println("Nie było Alertu, Odtwarzacz sie uruchomił ");
-					Assert.assertTrue(true);
+					Assert.assertTrue("Odtwarzacz się nie uruchomił",video.isDisplayed()&&seekBar.isDisplayed());
 					}
 					catch(NoSuchElementException ex)
 					{
-						//System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
-						driver.quit();
+						System.out.println("Nie znaleziono co najmniej jednego elementu odtwarzacza");
 						Assert.assertTrue("Nie znaleziono co najmniej jednego elementu odtwarzacza",false);
 					}
 				
 				
-			}
 		
-			
-		
-		
-		
-		
-		//System.out.println(seekBar.getAttribute("bounds"));
 
-		//driver.wait(20);
-		driver.quit();
+		
 		
 	}
 	public void swipeBy(int startX, int startY, int stopX, int stopY) {
@@ -128,6 +115,13 @@ public class ToyaGoTest1 {
 		action.release();
 		action.perform();
 
+	}
+	
+	
+	@After
+	public void quitDriver(){
+		if(driver!=null)
+			driver.quit();
 	}
 	
 }

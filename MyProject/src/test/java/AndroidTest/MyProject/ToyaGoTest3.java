@@ -25,12 +25,10 @@ import junit.framework.Assert;
  */
 public class ToyaGoTest3 {
 	
-	@After
-	public void quitDriver(){
-		driver.quit();
-	}
+	
 	
 	public static AndroidDriver driver;
+	private String currentText;
 	
 	@Test
 	public void test3() throws InterruptedException, MalformedURLException {
@@ -40,16 +38,15 @@ public class ToyaGoTest3 {
 		capabilities.setCapability("platformName", "Android");
 		capabilities.setCapability("appPackage", "com.toya.toyago");
 		capabilities.setCapability("appActivity", "com.toya.toyago.MainActivity");
+		
 		driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+		
 		if(driver.isDeviceLocked())
-		driver.unlockDevice();
+			driver.unlockDevice();
+		
 		driver.manage().timeouts().implicitlyWait(10L,  TimeUnit.SECONDS);	
-		//(new TouchAction(driver)).press(pressOptions).moveTo({x: 891: y: 894}).release().perform();
-		//włączanie i wyłączanie wifi
-		//driver.toggleWifi();
-		//włączanie i wyłączanie danych komórkowych
-		//driver.toggleData();
-		WebDriverWait wait = new WebDriverWait(driver,30);
+		
+		WebDriverWait wait = new WebDriverWait(driver,5);
 		
 		MobileElement mainTextView=(MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.TextView");
 		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
@@ -63,8 +60,9 @@ public class ToyaGoTest3 {
 					wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("com.toya.toyago:id/playerBackButton")));
 					MobileElement playerBackButton = (MobileElement) driver.findElementById("com.toya.toyago:id/playerBackButton");
 					playerBackButton.click();
+					currentText=mainTextView.getAttribute("text");
 					swipeRight();
-					Thread.sleep(500);
+					wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
 				}
 				else {
 				activeMenuItem.click();
@@ -72,30 +70,32 @@ public class ToyaGoTest3 {
 				
 				if(driver.isDeviceLocked())
 					driver.unlockDevice();
+				
 				wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("back")));
 				MobileElement backButton = (MobileElement) driver.findElementByAccessibilityId("back");
 				backButton.click();
-				swipeRight();
-				Thread.sleep(500);
-				swipeRight();
-				Thread.sleep(500);
-				swipeRight();
-				Thread.sleep(500);
+				
+				for(int j=0;j<3;j++){
+					currentText=mainTextView.getAttribute("text");
+					swipeRight();
+					wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
+					}
+				
 				}
 			}
 			else{
-			
+				currentText=mainTextView.getAttribute("text");
 				swipeRight();
-				Thread.sleep(500);
+				wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
 			}
 		}
 		
-		Assert.assertTrue(true);
+		Assert.assertTrue(mainTextView.isDisplayed()&&activeMenuItem.isDisplayed());
 		}
 		catch(Exception e) {
 		
 			e.printStackTrace();
-			Assert.assertTrue("Aplikacja nie działa poprawnie",false);
+			Assert.assertTrue("Aplikacja nie działa poprawnie",mainTextView.isDisplayed()&&activeMenuItem.isDisplayed());
 		}
 		
 		
@@ -103,12 +103,22 @@ public class ToyaGoTest3 {
 		
 	}
 	public void swipeRight() {
+		
 		TouchAction action = new TouchAction(driver);
 		action.press(PointOption.point(700, 850));
 		action.moveTo(PointOption.point(900, 850));
 		action.release();
 		action.perform();
 
+	}
+	
+	
+	@After
+	public void quitDriver(){
+		if(driver!=null) {
+			driver.quit();
+			driver=null;
+		}	
 	}
 	
 }

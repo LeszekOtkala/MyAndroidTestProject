@@ -9,6 +9,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.TouchAction;
@@ -28,36 +30,39 @@ public class ToyaGoTest4{
 	}
 	
 	public static AndroidDriver driver;
+	private String currentText;
 	
 	@Test
 	public void test4() throws InterruptedException, MalformedURLException {
 		DesiredCapabilities capabilities = new DesiredCapabilities(); 
-		//capabilities.setCapability(CapabilityType.BROWSER_NAME, "Chrome");
+		
 		capabilities.setCapability("deviceName", "3300628333e3a29b");
 		capabilities.setCapability("platformName", "Android");
 		capabilities.setCapability("appPackage", "com.toya.toyago");
 		capabilities.setCapability("appActivity", "com.toya.toyago.MainActivity");
+		
 		driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+		
 		if(driver.isDeviceLocked())
-		driver.unlockDevice();
+			driver.unlockDevice();
+		
 		driver.manage().timeouts().implicitlyWait(10L,  TimeUnit.SECONDS);	
 		
-		//włączanie i wyłączanie wifi
-		//driver.toggleWifi();
-		//włączanie i wyłączanie danych komórkowych
-		//driver.toggleData();
+		WebDriverWait wait = new WebDriverWait(driver,5);
 		
-		
+				
 		MobileElement mainTextView=(MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.TextView");
 		
 		
 		MobileElement activeMenuItem = (MobileElement) driver.findElementByXPath("/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.support.v4.view.ViewPager/android.widget.FrameLayout[4]/android.widget.LinearLayout/android.widget.LinearLayout/android.widget.ImageView");
 		
-		
-		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")) {
+		int j=0;
+		while(!mainTextView.getAttribute("text").equals("Oglądaj TV")&&j<30) {
 			System.out.println(mainTextView.getAttribute("text"));
+			currentText=mainTextView.getAttribute("text");
 			swipeRight();
-			Thread.sleep(500);
+			wait.until(ExpectedConditions.not(ExpectedConditions.attributeToBe(mainTextView, "text", currentText)));
+			j++;
 			}
 		activeMenuItem.click();
 		
@@ -71,7 +76,7 @@ public class ToyaGoTest4{
 			
 			MobileElement video=(MobileElement) driver.findElementById("com.toya.toyago:id/video");
 			MobileElement seekBar=(MobileElement) driver.findElementById("com.toya.toyago:id/playerSeekBar");
-			System.out.println("Nie było Alertu, Odtwarzacz jest wyświetlony! ");
+			//System.out.println("Nie było Alertu, Odtwarzacz jest wyświetlony! ");
 			
 			Assert.assertTrue("Nie znaleziono elementów odtwarzacza ",video!=null&&seekBar!=null);
 			
